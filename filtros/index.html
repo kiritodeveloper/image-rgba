@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>filtros</title>
+    <meta name="author" content="Davidson Fellipe">
+
+
+    <link rel="stylesheet" href="assets/css/styles.css">
+
+    <!-- vendor styles -->
+    <link rel="stylesheet" href="assets/css/vendor/nvd3/nv.d3.css">
+</head>
+<body>
+
+
+    <h1>filtros image</h1>
+
+    <ul class="filter">
+        <li>
+            <ul>
+                <li class="label-filters"><span>pixel to pixel:</span></li>
+                <li class="btn btn-filter" draggable="true" data-filter="grayscale">grayscale</li>
+                <li class="btn btn-filter" draggable="true" data-filter="sepia">sepia</li>
+                <li class="btn btn-filter" draggable="true" data-filter="thresholding">thresholding-128</li>
+                <li class="btn btn-filter" draggable="true" data-filter="invert">invert</li>
+                <li class="btn btn-filter" draggable="true" data-filter="saturation">saturation</li>
+                <li class="btn btn-filter" draggable="true" data-filter="red">red</li>
+                <li class="btn btn-filter" draggable="true" data-filter="green">green</li>
+                <li class="btn btn-filter" draggable="true" data-filter="blue">blue</li>
+            </ul>
+        </li>
+        <li>
+            <ul>
+                <li class="label-filters"><span>edge/line detection:</span></li>
+                <li class="btn btn-filter" draggable="true" data-filter="roberts">roberts</li>
+                <li class="btn btn-filter" draggable="true" data-filter="sharpen">sharpen</li>
+                <li class="btn btn-filter" draggable="true" data-filter="sobelVertical">sobel y</li>
+                <li class="btn btn-filter" draggable="true" data-filter="sobelHorizontal">sobel x</li>
+                <li class="btn btn-filter" draggable="true" data-filter="highpass">highpass</li>
+                <li class="btn btn-filter" draggable="true" data-filter="laplacian">laplacian</li>
+                <li class="btn btn-filter" draggable="true" data-filter="gaussian">gaussian</li>
+                <li class="btn btn-filter" draggable="true" data-filter="prewittVertical">prewitt y</li>
+                <li class="btn btn-filter" draggable="true" data-filter="prewittHorizontal">prewitt x</li>
+            </ul>
+        </li>
+    </ul>
+
+    <section class="demo-container">
+
+
+        <img id="lena" src="assets/img/lena.jpg" class="image-default" width="400" height="400">
+
+        <div class="content">
+            <div id="destination" class="drop boxes">
+            </div>
+            <canvas id="canvas" width="400" height="400" class="image-canvas"></canvas>
+            <span class="btn btn-drop" draggable="true">Drag and drop filters here</span>
+            <span id="filter-reset" class="btn btn-reset" draggable="true" data-filter="reset">remove all filters</span>
+        </div>
+
+        <section class="info" id="chart1">
+            <svg class="chart" style="width: 300px;"></svg>
+        </section>
+    </section>
+
+    <!-- vendor scripts -->
+    <script src="assets/js/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/js/vendor/jquery-drag-drop-plugin/jquery-drag-drop-plugin.js"></script>
+    <script src="assets/js/vendor/nvd3/d3.v2.min.js"></script>
+    <script src="assets/js/vendor/nvd3/nv.d3.min.js"></script>
+    <script src="assets/js/vendor/nvd3/tooltip.js"></script>
+    <script src="assets/js/vendor/nvd3/utils.js"></script>
+    <script src="assets/js/vendor/nvd3/models/legend.js"></script>
+    <script src="assets/js/vendor/nvd3/models/axis.js"></script>
+    <script src="assets/js/vendor/nvd3/models/scatter.js"></script>
+    <script src="assets/js/vendor/nvd3/models/line.js"></script>
+    <script src="assets/js/vendor/nvd3/models/lineChart.js"></script>
+
+    <!-- scripts for lib -->
+    <!-- <script src="../dist/lena.js"></script> -->
+     <script src="js/lena.js"></script>
+    <!-- scripts for runner -->
+    <script src="assets/js/runner/config-chart.js"></script>
+
+    <!-- scripts for runner -->
+    <script src="assets/js/runner/runner.js"></script>
+
+    <script>
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-2123552-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+    <p>
+Upload an image from your desktop and select a filter from the select:
+</p>
+<input type="file" id="imageLoader"/>
+<label for="filter-changer">Select a filter to apply</label>
+<select id="filter-changer">
+  <option value="none">None</option>
+  <option value="red">Red</option>
+  <option value="gaussian">Gaussian</option>
+  <option value="grayscale">Grayscale</option>
+  <option value="highpass">highpass</option>
+  <option value="invert">invert</option>
+  <option value="laplacian">laplacian</option>
+  <option value="prewittHorizontal">Prewitt Horizontal</option>
+  <option value="prewittVertical">Prewitt Vertical</option>
+  <option value="roberts">roberts</option>
+  <option value="saturation">saturation</option>
+  <option value="sepia">sepia</option>
+  <option value="sharpen">sharpen</option>
+  <option value="sobelHorizontal">sobel Horizontal</option>
+  <option value="sobelVertical">sobel Vertical</option>
+  <option value="thresholding">thresholding</option>
+</select>
+
+<br>
+
+<img id="original-image" />
+<canvas id="filtered-image" />
+<script type="text/javascript">
+    var imageLoader = document.getElementById('imageLoader');
+var originalImage = document.getElementById("original-image");
+var filteredImageCanvas = document.getElementById("filtered-image");
+var filterChanger = document.getElementById("filter-changer");
+var imageUploaded = false;
+
+// Handle image upload into img tag
+imageLoader.addEventListener('change', function(e){
+        var reader = new FileReader();
+    
+    reader.onload = function(event){
+        originalImage.onload = function(){
+             console.log("Image Succesfully Loaded");
+             imageUploaded = true;
+        };
+        originalImage.src = event.target.result;
+    };
+    
+    reader.readAsDataURL(e.target.files[0]);   
+}, false);
+
+filterChanger.addEventListener("change", function(e){
+    var filter = filterChanger.value;
+    
+  if(imageUploaded && filter != "none"){
+  
+    // Apply filter
+    LenaJS.filterImage(filteredImageCanvas, LenaJS[filter], originalImage);
+  }
+}, false);
+</script>
+
+</body>
+
+</html>
